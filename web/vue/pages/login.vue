@@ -1,0 +1,51 @@
+<template lang="pug">
+    rz-layout-responsive(heading="Log In" align)
+        v-form
+            v-text-field(
+                label="Email"
+                v-model="auth.email"
+                prepend-icon="person"
+                )
+            v-text-field(
+                prepend-icon="lock"
+                :append-icon="auth.visible ? 'visibility': 'visibility_off'"
+
+                label="Password"
+                :type="auth.visible ? 'text': 'password' "
+                v-model="auth.password"
+                @click:append="auth.visible = !auth.visible"
+                )
+            v-btn(@click="submit()" color="primary") Log In
+            router-link.float-right(to='/signup') 
+                Dont have an account? Sign up
+            v-spacer
+                p 
+
+    
+</template>
+
+<script>
+export default {
+    data: () => ({
+        auth: {
+            email: "",
+            password: "",
+            visible: false
+        }
+    }),
+    methods: {
+        submit() {
+            const data = {
+                email: this.auth.email,
+                password: this.auth.password,
+            };
+
+            this.$store.dispatch('logIn', data)
+                .then(() => {
+                    this.$router.replace('/profile');
+                })
+                .catch(err => console.log(err))
+        }
+    }
+}
+</script>
