@@ -38,6 +38,8 @@ const copyDependencies = () => {
 const postInstall = () => {
     rollup();
     copyDependencies();
+
+    $`cargo build`;
 }
 
 const main = (script, args) => {
