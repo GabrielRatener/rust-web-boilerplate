@@ -31,7 +31,7 @@ parking_lot = { version = "0.10", features = ["nightly"] }
 [dependencies.rocket_contrib]
 version = "0.4"
 default-features = false
-features = ["json", "diesel_postgres_pool"]
+features = ["json", "diesel_postgres_pool", "serve"]
 
 [features]
 default = []
