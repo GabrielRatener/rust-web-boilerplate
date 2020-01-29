@@ -1,9 +1,8 @@
 
 
-import {hash} from "./utils/utils"
+import {hash} from "./utils"
 
 const NS = `/services`;
-
 const session = {
     id: null,
     secret: null

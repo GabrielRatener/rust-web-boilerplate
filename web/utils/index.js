@@ -19,4 +19,13 @@ export const randomString = (length = 10, alphabet = ALPHANUMERIC) => {
     return string;
 }
 
+export const unique = () => {
+    i++;
+
+    return i;
+}
+
+let i = 0;
+
 export {hash} from "./sha256"
+export * from "./validation"

@@ -1,6 +1,4 @@
 
-import validator from "validator"
-
 export const MIN_NAME_LENGTH = 5;
 export const MAX_NAME_LENGTH = 40;
 
@@ -66,5 +64,3 @@ export const testTitle = (title) => {
         title.length <= MAX_TITLE_LENGTH
     );
 }
-
-export default validator;

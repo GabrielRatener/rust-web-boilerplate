@@ -54,12 +54,14 @@
 </template>
 
 <script>
-import validator,
-      {
-        passwordTests, 
-        testUserName, 
-        MAX_NAME_LENGTH
-       } from '../../utils/validation'
+
+import validator from "validator"
+
+import {
+    passwordTests, 
+    testUserName, 
+    MAX_NAME_LENGTH
+} from '../../utils'
 
 export default {
     data: () => ({

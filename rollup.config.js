@@ -24,6 +24,12 @@ export default {
     },
 
     watch: {
-        include: ['web/**/*.js', 'web/**/*.vue']
+        exclude: 'node_modules/**',
+        include: [
+            './web/*.js',
+            './web/utils/*.js',
+            './web/vue/*/*.vue',
+            './web/vue/*.vue'
+        ]
     }
 }

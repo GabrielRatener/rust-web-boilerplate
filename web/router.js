@@ -1,7 +1,7 @@
 
 import VueRouter from "vue-router";
 import {pages} from "./components"
-import {waitForLogin} from "./store"
+import {waitForLogin} from "./login"
 
 export const routes = [
     {name: 'index', path: '/', component: pages.Index},
@@ -17,6 +17,7 @@ const router = new VueRouter({routes});
 router.beforeEach((destination, origin, next) => {
     waitForLogin()
         .then(() => {
+
             next();
         }, (err) => {
             // TODO: save desired route for post-login
