@@ -1,6 +1,6 @@
 use diesel;
 use diesel::prelude::*;
-use rocket::{post, State};
+use rocket::{post, get, State};
 use rocket_contrib::json;
 use rocket_contrib::json::{Json, JsonValue};
 
@@ -8,11 +8,13 @@ use crate::config::AppConfig;
 use crate::database::DbConn;
 use crate::models::user::{NewUser, UserModel};
 use crate::responses::{
-    conflict, created, internal_server_error, ok, unauthorized, unprocessable_entity, APIResponse,
+    conflict, created, ok, unauthorized, unprocessable_entity, APIResponse,
 };
 use crate::schema::users;
 use crate::schema::users::dsl::*;
 use crate::validation::user::UserLogin;
+
+use crate::tokens::{generate_auth_token, verify_auth_token};
 
 /// Log the user in and return a response with an auth token.
 ///
@@ -30,30 +32,27 @@ pub fn login(
 
     // For privacy reasons, we'll not provide the exact reason for failure here (although this
     // could probably be timing attacked to find out whether users exist or not.
-    let mut user =
+    let user =
         user_q.ok_or_else(|| unauthorized().message("Username or password incorrect."))?;
 
     if !user.verify_password(user_in.password.as_str()) {
         return Err(unauthorized().message("Username or password incorrect."));
-    }
-
-    let token = if user.has_valid_auth_token(app_config.auth_token_timeout_days) {
-        user.current_auth_token.ok_or_else(internal_server_error)?
     } else {
-        user.generate_auth_token(&db)?
-    };
+        let token = generate_auth_token(user.id);
 
-    Ok(ok().data(json!({
-        "user_id": user.id,
-        "token": token,
-    })))
+        Ok(ok().data(json!({
+            "success": true,
+            "id": user.id.to_string(),
+            "token": token
+        })))
+    }
 }
 
 /// Register a new user using email and password.
 ///
 /// Return CONFLICT is a user with the same email already exists.
-#[post("/register", data = "<user>", format = "application/json")]
-pub fn register(
+#[post("/signup", data = "<user>", format = "application/json")]
+pub fn signup(
     user: Result<UserLogin, JsonValue>,
     db: DbConn,
 ) -> Result<APIResponse, APIResponse> {
@@ -73,9 +72,26 @@ pub fn register(
         _,
     )) = insert_result
     {
-        return Err(conflict().message("User already exists."));
+        Ok(ok().data(json!({
+            "success": false
+        })))
+    } else {
+        let user = insert_result?;
+        let token = generate_auth_token(user.id);
+    
+        Ok(created().data(json!({
+            "success": true,
+            "id": user.id.to_string(),
+            "token": token
+        })))
     }
+}
 
-    let user = insert_result?;
-    Ok(created().data(json!(&user)))
+#[get("/text-token?<token>")]
+pub fn test_token(token: String) -> APIResponse {
+    let verified = verify_auth_token(&token);
+
+    ok().data(json!({
+        "success": verified
+    }))
 }

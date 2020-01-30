@@ -13,8 +13,6 @@ use validator_derive::Validate;
 
 #[derive(Deserialize, Debug, Validate)]
 pub struct UserLogin {
-    #[serde(skip_deserializing)]
-    pub id: Option<Uuid>,
     #[validate(email)]
     pub email: String,
     pub password: String,

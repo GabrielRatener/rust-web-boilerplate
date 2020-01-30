@@ -55,41 +55,6 @@ speculate! {
                 .first::<UserModel>(&*conn).unwrap();
             assert_eq!(res.status(), Status::Ok);
             assert_eq!(body.user_id, refreshed_user.id);
-            assert_eq!(body.token, refreshed_user.current_auth_token.unwrap());
-        }
-
-        it "can log in and get back the same auth token if there's already a valid one" {
-            let user = make_user(&conn);
-            let data = json!({
-                "email": user.email,
-                "password": "testtest",
-            });
-
-            // Login the first time and then retrieve and store the token.
-            let first_login_token = {
-                client.post("/auth/login")
-                    .header(ContentType::JSON)
-                    .body(data.to_string())
-                    .dispatch();
-                let user_after_first_login = users
-                    .find(user.id)
-                    .first::<UserModel>(&*conn).unwrap();
-                user_after_first_login.current_auth_token.unwrap()
-            };
-
-            // Login the second time and then retrieve and store the token.
-            let second_login_token = {
-                client.post("/auth/login")
-                    .header(ContentType::JSON)
-                    .body(data.to_string())
-                    .dispatch();
-                let user_after_second_login = users
-                    .find(user.id)
-                    .first::<UserModel>(&*conn).unwrap();
-                user_after_second_login.current_auth_token.unwrap()
-            };
-
-            assert_eq!(first_login_token, second_login_token);
         }
 
         it "fails with a wrong username" {
@@ -157,7 +122,6 @@ speculate! {
                 .filter(email.eq(new_email))
                 .first::<UserModel>(&*conn).unwrap();
             assert_eq!(res.status(), Status::Ok);
-            assert_eq!(body.token, logged_in_user.current_auth_token.unwrap());
         }
 
         it "can't register with an existing email" {

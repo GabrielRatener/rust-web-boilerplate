@@ -22,6 +22,8 @@ validator = "0.10"
 validator_derive = "0.10"
 ring = "0.13"
 rand = "0.7"
+rust-crypto = "*"
+jwt = "*"
 
 [dev-dependencies]
 quickcheck = "0.9"

@@ -3,6 +3,10 @@
 
 // Keep the pre-2018 style [macro_use] for diesel because it's annoying otherwise:
 // https://github.com/diesel-rs/diesel/issues/1764
+
+extern crate jwt;
+extern crate crypto;
+
 #[macro_use]
 extern crate diesel;
 
@@ -16,6 +20,8 @@ pub mod models;
 pub mod responses;
 pub mod schema;
 pub mod validation;
+pub mod tokens;
+
 
 /// Constructs a new Rocket instance.
 ///
@@ -27,7 +33,7 @@ pub fn rocket_factory(config_name: &str) -> Result<rocket::Rocket, String> {
         .attach(database::DbConn::fairing())
         .manage(app_config)
         .mount("/hello/", routes![api::hello::whoami])
-        .mount("/auth/", routes![api::auth::login, api::auth::register,])
+        .mount("/auth/", routes![api::auth::login, api::auth::signup,])
         .register(catchers![
             handlers::bad_request_handler,
             handlers::unauthorized_handler,

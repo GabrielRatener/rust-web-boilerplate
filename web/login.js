@@ -60,7 +60,7 @@ export const authenticate = (user, {id, secret}) => {
 export const checkSession = ({id, secret}) => {
     const token = generateToken({id, secret});
 
-    return get('test-token', false, {token})
+    return services.get('test-token', false, {token})
         .then(({success}) => {
             return success;
         });
