@@ -60,7 +60,7 @@ export const authenticate = (user, {id, secret}) => {
 export const checkSession = ({id, secret}) => {
     const token = generateToken({id, secret});
 
-    return services.get('test-token', false, {token})
+    return services.get('auth/test-token', false, {token})
         .then(({success}) => {
             return success;
         });
@@ -73,7 +73,7 @@ export const generateToken = (auth = session) => {
 }
 
 export const logIn = (params) => {
-    return services.post('login', false, params)
+    return services.post('auth/login', false, params)
         .then(({err, session, user}) => {
             if (err) {
                 return {err, success: false};
@@ -92,7 +92,7 @@ export const logOut = () => {
 }
 
 export const signUp = (params) => {
-    return services.post('signup', false, params)
+    return services.post('auth/signup', false, params)
         .then(({err, session, user}) => {
 
             if (err) {

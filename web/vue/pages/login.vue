@@ -25,6 +25,9 @@
 </template>
 
 <script>
+
+import {logIn} from "../../login"
+
 export default {
     data: () => ({
         auth: {
@@ -35,16 +38,17 @@ export default {
     }),
     methods: {
         submit() {
-            const data = {
+
+            logIn({
                 email: this.auth.email,
                 password: this.auth.password,
-            };
-
-            this.$store.dispatch('logIn', data)
-                .then(() => {
-                    this.$router.replace('/profile');
-                })
-                .catch(err => console.log(err))
+            })
+            .then(() => {
+                this.$router.replace('/profile');
+            })
+            .catch((err) => {
+                console.log(err);
+            });
         }
     }
 }

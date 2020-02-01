@@ -6,6 +6,7 @@ import vuex from "vuex"
 
 import store from "./store"
 import router from "./router"
+import {attemptAutoLogin, resolveLoggedInStatus} from "./login"
 
 import {App, layouts, elements} from "./components"
 
@@ -45,7 +46,9 @@ window.onload = () => {
         },
 
         created() {
-            store.dispatch('attemptAutoLogin');
+            // store.dispatch('attemptAutoLogin');
+
+            resolveLoggedInStatus();
         }
     });
 }

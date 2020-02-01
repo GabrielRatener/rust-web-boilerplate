@@ -10,7 +10,6 @@ use rocket::http::Status;
 use rocket::request::{self, Request, FromRequest};
 
 static AUTH_SECRET: &'static str = "blablaksdf";
-static AUTH_OFFSET : usize = "Bearer ".len();
 
 
 pub struct AuthToken(String);

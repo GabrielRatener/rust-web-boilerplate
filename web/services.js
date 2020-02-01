@@ -2,7 +2,7 @@
 
 import {hash} from "./utils"
 
-const NS = `/services`;
+const NS = `/api`;
 const session = {
     id: null,
     secret: null

@@ -63,6 +63,8 @@ import {
     MAX_NAME_LENGTH
 } from '../../utils'
 
+import {signUp} from "../../login"
+
 export default {
     data: () => ({
         auth: {
@@ -96,11 +98,13 @@ export default {
                 phone: this.auth.phone
             };
 
-            this.$store.dispatch('signUp', data)
+            signUp(data)
                 .then(() => {
                     this.$router.replace('/profile');
                 })
-                .catch(err => console.log(err))
+                .catch((err) => {
+                    console.log(err);
+                })
         }
     }
 }

@@ -79,7 +79,7 @@ pub fn signup(
         let user = insert_result?;
         let token = generate_auth_token(user.id);
     
-        Ok(created().data(json!({
+        Ok(ok().data(json!({
             "success": true,
             "user": user,
             "token": token
