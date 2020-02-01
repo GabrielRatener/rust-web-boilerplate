@@ -1,5 +1,5 @@
 <template lang="pug">
-    rz-layout-responsive(heading="Sign Up" align)
+    rbp-layout-responsive(heading="Sign Up" align)
         v-form(
             v-model="valid"
             lazy-validation
@@ -59,7 +59,8 @@ import validator from "validator"
 
 import {
     passwordTests, 
-    testUserName, 
+    testUserName,
+    extractDigits,
     MAX_NAME_LENGTH
 } from '../../utils'
 
@@ -95,9 +96,11 @@ export default {
                 name: this.auth.name,
                 email: this.auth.email,
                 password: this.auth.password,
-                phone: this.auth.phone
+                phone:
+                    extractDigits(this.auth.phone)
+                        .slice(-10)
             };
-
+            
             signUp(data)
                 .then(() => {
                     this.$router.replace('/profile');

@@ -19,6 +19,22 @@ export const randomString = (length = 10, alphabet = ALPHANUMERIC) => {
     return string;
 }
 
+export const extractDigits = (string) => {
+    const digits = new Set(NUMERIC);
+
+    let output = '';
+
+    for (let i = 0; i < string.length; i++) {
+        const c = string[i];
+
+        if (digits.has(c)) {
+            output += c;
+        }
+    }
+
+    return output;
+}
+
 export const unique = () => {
     i++;
 

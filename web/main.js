@@ -6,9 +6,12 @@ import vuex from "vuex"
 
 import store from "./store"
 import router from "./router"
-import {attemptAutoLogin, resolveLoggedInStatus} from "./login"
+import {resolveLoggedInStatus} from "./login"
 
 import {App, layouts, elements} from "./components"
+
+// the namespace to use for your custom elements
+const ns = 'Rbp';
 
 Vue.use(vuex);
 Vue.use(Vuetify);
@@ -21,13 +24,13 @@ Vue.filter('image', (subPath) => {
 // register the layouts as global components
 Object.entries(layouts)
     .forEach(([name, component]) => {
-        Vue.component(`RzLayout${name}`, component);
+        Vue.component(`${ns}Layout${name}`, component);
     });
 
 // register the layouts as global components
 Object.entries(elements)
     .forEach(([name, component]) => {
-        Vue.component(`Rz${name}`, component);
+        Vue.component(`${ns}${name}`, component);
     });
 
 

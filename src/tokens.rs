@@ -1,6 +1,7 @@
 
 use uuid::Uuid;
 use std::default;
+use std::string::ToString;
 
 use jwt::{Header, Registered, Token};
 use crypto::sha2::Sha256;
@@ -63,6 +64,12 @@ fn is_valid_key(key: &str) -> bool {
 impl AuthToken {
     pub fn to_string_ptr(&self) -> &String {
         &self.0
+    }
+}
+
+impl ToString for AuthToken {
+    fn to_string(&self) -> String {
+        self.0.clone()
     }
 }
 

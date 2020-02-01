@@ -1,5 +1,5 @@
 <template lang="pug">
-    rz-layout-responsive(heading="Log In" align)
+    rbp-layout-responsive(heading="Log In" align)
         v-form
             v-text-field(
                 label="Email"

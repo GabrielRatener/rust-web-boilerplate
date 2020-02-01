@@ -4,21 +4,17 @@ import {states} from "./login"
 
 const store = new vuex.Store({
     state: {
-        session: null,
-
         user: null,
 
         loggedInStatus: states.INDETERMINATE
     },
 
     mutations: {
-        SET_SESSION(state, session, user) {
-            state.session = session;
+        SET_SESSION(state, user) {
             state.user = user;
         },
 
         UNSET_SESSION(state) {
-            state.session = null;
             state.user = null;
         },
 
@@ -38,7 +34,7 @@ const store = new vuex.Store({
         startSession(ctxt, {session, user}) {
             ctxt.dispatch('setLoggedInStatus', states.LOGGED_IN);
 
-            ctxt.commit('SET_SESSION', session, user);
+            ctxt.commit('SET_SESSION', user);
         },
 
         endSession(ctxt) {

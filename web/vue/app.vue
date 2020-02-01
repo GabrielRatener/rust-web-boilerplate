@@ -73,6 +73,7 @@
 <script lang="defscript">
 
     import {mapGetters} from "vuex"
+    import {logOut} from "../login"
 
     export default {
         data() {
@@ -85,10 +86,6 @@
                     {
                         title: "Profile",
                         path: '/profile'
-                    },
-                    {
-                        title: "Applications",
-                        path: '/applications'
                     }
                 ]
             }
@@ -96,9 +93,9 @@
 
         methods: {
             logOut() {
-                this.$store.dispatch('logOut');
-
                 this.drawer = false;
+
+                logOut();
 
                 this.$router.replace('/');
             }

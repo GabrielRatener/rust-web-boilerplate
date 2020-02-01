@@ -12,7 +12,7 @@ use crate::responses::{
 };
 use crate::schema::users;
 use crate::schema::users::dsl::*;
-use crate::validation::user::UserLogin;
+use crate::validation::user::{UserLogin, UserSignup};
 
 use crate::tokens::{AuthToken, generate_auth_token, verify_auth_token};
 
@@ -53,7 +53,7 @@ pub fn login(
 /// Return CONFLICT is a user with the same email already exists.
 #[post("/signup", data = "<user>", format = "application/json")]
 pub fn signup(
-    user: Result<UserLogin, JsonValue>,
+    user: Result<UserSignup, JsonValue>,
     db: DbConn,
 ) -> Result<APIResponse, APIResponse> {
     let user_data = user.map_err(unprocessable_entity)?;
@@ -61,6 +61,8 @@ pub fn signup(
     let new_password_hash = UserModel::make_password_hash(user_data.password.as_str());
     let new_user = NewUser {
         email: user_data.email.clone(),
+        name: user_data.name.clone(),
+        phone: user_data.phone.clone(),
         password_hash: new_password_hash,
     };
 

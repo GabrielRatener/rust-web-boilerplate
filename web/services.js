@@ -1,36 +1,14 @@
 
-
-import {hash} from "./utils"
+import {token} from "./login"
 
 const NS = `/api`;
-const session = {
-    id: null,
-    secret: null
-}
 
-export const unauthenticate = () => {
-    session.id = null;
-    session.secret = null;
-}
-
-export const authenticate = ({id, secret}) => {
-    session.id = id;
-    session.secret = secret;
-}
-
-export const checkSession = ({id, secret}) => {
-    const token = generateToken({id, secret});
-
-    return get('test-token', false, {token})
-        .then(({success}) => {
-            return success;
-        });
-}
-
-export const generateToken = (auth = session) => {
-    const time = Date.now();
-
-    return `${auth.id}|${time}|${hash(auth.id + time + auth.secret)}`;
+const auth = () => {
+    if (token() !== null) {
+        return `Bearer ${token()}`;
+    } else {
+        throw new Error("User not logged in!");
+    }
 }
 
 export const querify = (obj) => {
@@ -73,7 +51,7 @@ export const get = (subPath, token = true, data = {}) => {
         xhr.open('GET', url, true);
 
         if (token) {
-            xhr.setRequestHeader("Authorization", generateToken());
+            xhr.setRequestHeader("authorization", auth());
         }
 
         xhr.send();
@@ -103,7 +81,7 @@ export const post = (subPath, token = true, data = {}) => {
         xhr.setRequestHeader("Content-type", "application/json");
 
         if (token) {
-            xhr.setRequestHeader("Authorization", generateToken());
+            xhr.setRequestHeader("authorization", auth());
         }
 
         xhr.send(JSON.stringify(data));

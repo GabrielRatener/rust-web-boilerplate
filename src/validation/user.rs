@@ -13,12 +13,21 @@ use validator_derive::Validate;
 
 #[derive(Deserialize, Debug, Validate)]
 pub struct UserLogin {
-    #[validate(email)]
     pub email: String,
     pub password: String,
 }
 
-impl FromDataSimple for UserLogin {
+#[derive(Deserialize, Debug, Validate)]
+pub struct UserSignup {
+    #[validate(email)]
+    pub email: String,
+    pub name: String,
+    pub phone: String,
+
+    pub password: String,
+}
+
+impl FromDataSimple for UserSignup {
     type Error = JsonValue;
 
     fn from_data(req: &Request, data: Data) -> data::Outcome<Self, JsonValue> {
@@ -30,7 +39,7 @@ impl FromDataSimple for UserLogin {
             ));
         }
         let user =
-            Json::<UserLogin>::from_data(req, Transform::Borrowed(Success(&d))).map_failure(|_| {
+            Json::<UserSignup>::from_data(req, Transform::Borrowed(Success(&d))).map_failure(|_| {
                 (
                     Status::UnprocessableEntity,
                     json!({"_schema": "Error while parsing user login."}),
@@ -61,8 +70,10 @@ impl FromDataSimple for UserLogin {
             return Failure((Status::UnprocessableEntity, json!(errors)));
         }
 
-        Success(UserLogin {
+        Success(UserSignup {
             email: user.email.clone(),
+            name: user.name.clone(),
+            phone: user.phone.clone(),
             password: user.password.clone(),
         })
     }

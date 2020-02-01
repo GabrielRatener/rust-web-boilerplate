@@ -22,20 +22,20 @@ use crate::tokens;
 #[table_name = "users"]
 pub struct UserModel {
     pub id: Uuid,
-
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
     pub email: String,
+    pub name: String,
+    pub phone: String,
 
     #[serde(skip_serializing)]
     pub password_hash: Vec<u8>,
-    pub last_action: Option<NaiveDateTime>,
 }
 
 #[derive(Insertable)]
 #[table_name = "users"]
 pub struct NewUser {
     pub email: String,
+    pub name: String,
+    pub phone: String,
     pub password_hash: Vec<u8>,
 }
 
