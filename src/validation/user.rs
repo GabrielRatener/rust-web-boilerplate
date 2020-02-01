@@ -62,7 +62,6 @@ impl FromDataSimple for UserLogin {
         }
 
         Success(UserLogin {
-            id: user.id,
             email: user.email.clone(),
             password: user.password.clone(),
         })

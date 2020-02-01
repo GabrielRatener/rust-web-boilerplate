@@ -1,6 +1,6 @@
 use diesel;
 use diesel::prelude::*;
-use rocket::{post, get, State};
+use rocket::{post, get, State, Request};
 use rocket_contrib::json;
 use rocket_contrib::json::{Json, JsonValue};
 
@@ -14,7 +14,7 @@ use crate::schema::users;
 use crate::schema::users::dsl::*;
 use crate::validation::user::UserLogin;
 
-use crate::tokens::{generate_auth_token, verify_auth_token};
+use crate::tokens::{AuthToken, generate_auth_token, verify_auth_token};
 
 /// Log the user in and return a response with an auth token.
 ///
@@ -42,7 +42,7 @@ pub fn login(
 
         Ok(ok().data(json!({
             "success": true,
-            "id": user.id.to_string(),
+            "user": user,
             "token": token
         })))
     }
@@ -81,15 +81,15 @@ pub fn signup(
     
         Ok(created().data(json!({
             "success": true,
-            "id": user.id.to_string(),
+            "user": user,
             "token": token
         })))
     }
 }
 
-#[get("/text-token?<token>")]
-pub fn test_token(token: String) -> APIResponse {
-    let verified = verify_auth_token(&token);
+#[get("/test-token")]
+pub fn test_token(token: AuthToken) -> APIResponse {            
+    let verified = verify_auth_token(token.to_string_ptr());
 
     ok().data(json!({
         "success": verified

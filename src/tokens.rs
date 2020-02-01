@@ -5,9 +5,23 @@ use std::default;
 use jwt::{Header, Registered, Token};
 use crypto::sha2::Sha256;
 
-static AUTH_SECRET: &'static str = "blablaksdf";
+use rocket::Outcome;
+use rocket::http::Status;
+use rocket::request::{self, Request, FromRequest};
 
-pub fn verify_auth_token(token: String) -> bool {
+static AUTH_SECRET: &'static str = "blablaksdf";
+static AUTH_OFFSET : usize = "Bearer ".len();
+
+
+pub struct AuthToken(String);
+
+#[derive(Debug)]
+pub enum AuthError {
+    Missing,
+    Invalid
+}
+
+pub fn verify_auth_token(token: &String) -> bool {
     let verification =
         Token::<Header, Registered>::parse(token.as_str()).unwrap();
     
@@ -40,5 +54,34 @@ pub fn authenticate_token(token: &String) -> Option<String> {
         verification.claims.sub
     } else {
         None
+    }
+}
+
+fn is_valid_key(key: &str) -> bool {
+    key[..7] == *"Bearer "
+}
+
+impl AuthToken {
+    pub fn to_string_ptr(&self) -> &String {
+        &self.0
+    }
+}
+
+impl<'a, 'r> FromRequest<'a, 'r> for AuthToken {
+    type Error = AuthError;
+
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
+
+        let auth_headers: Vec<_> = request.headers().get("authorization").collect();
+        
+        match auth_headers.len() {
+            0 => Outcome::Failure((Status::BadRequest, AuthError::Missing)),
+
+            1 if is_valid_key(auth_headers[0])
+              => Outcome::Success(AuthToken(auth_headers[0][7..].to_string())),
+
+            1 => Outcome::Failure((Status::BadRequest, AuthError::Invalid)),
+            _ => Outcome::Failure((Status::BadRequest, AuthError::Invalid))
+        }
     }
 }

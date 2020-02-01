@@ -42,5 +42,6 @@ pub fn rocket_factory(config_name: &str) -> Result<rocket::Rocket, String> {
             handlers::internal_server_error_handler,
             handlers::service_unavailable_handler,
         ]);
+        
     Ok(rocket)
 }
