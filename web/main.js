@@ -49,7 +49,6 @@ window.onload = () => {
         },
 
         created() {
-            // store.dispatch('attemptAutoLogin');
 
             resolveLoggedInStatus();
         }
