@@ -33,7 +33,15 @@ pub fn rocket_factory(config_name: &str) -> Result<rocket::Rocket, String> {
         .attach(database::DbConn::fairing())
         .manage(app_config)
         .mount("/api/hello/", routes![api::hello::whoami])
-        .mount("/api/auth/", routes![api::auth::login, api::auth::signup,])
+        .mount("/api/auth/", routes![
+            api::auth::login,
+            api::auth::signup,
+            api::auth::verify_session,
+            api::auth::logout,
+        ])
+        .mount("/api/profile", routes![
+            api::profile::get_profile,
+        ])
         .register(catchers![
             handlers::bad_request_handler,
             handlers::unauthorized_handler,

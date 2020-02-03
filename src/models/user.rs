@@ -17,6 +17,8 @@ use uuid::Uuid;
 
 use crate::schema::users;
 use crate::tokens;
+use crate::schema::users::dsl::*;
+
 
 const SALT_LENGTH : usize = 12;
 
@@ -78,11 +80,10 @@ impl UserModel {
     ///     <user uuid>:<auth token>
     /// 
     pub fn get_user_from_login_token(token: &str, db: &PgConnection) -> Option<UserModel> {
-        use crate::schema::users::dsl::*;
 
-        let token_string = String::from(token);
+        let token = tokens::AuthToken::from_string(String::from(token));
 
-        if let Some(user_id_string) = tokens::authenticate_token(&token_string) {
+        if let Some(user_id_string) = tokens::authenticate_token(&token) {
             let user_id = Uuid::parse_str(user_id_string.as_str())
                 .unwrap_or_default();
 

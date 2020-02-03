@@ -45,17 +45,16 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserModel {
 
     fn from_request(request: &'a Request<'r>) -> request::Outcome<UserModel, ()> {
         let db = <DbConn as FromRequest>::from_request(request)?;
-        let keys: Vec<_> = request.headers().get("Authorization").collect();
-        if keys.len() != 1 {
-            return Outcome::Failure((Status::BadRequest, ()));
-        };
 
-        let token_header = keys[0];
-        let token = token_header.replace("Bearer ", "");
+        if let Some(session_cookie) = request.cookies().get("session-token") {
+            let session_token = session_cookie.value();
 
-        match UserModel::get_user_from_login_token(&token, &*db) {
-            Some(user) => Outcome::Success(user),
-            None => Outcome::Failure((Status::Unauthorized, ())),
-        }
+            match UserModel::get_user_from_login_token(session_token, &*db) {
+                Some(user) => Outcome::Success(user),
+                None => Outcome::Failure((Status::Unauthorized, ()))
+            }
+        } else {
+            Outcome::Failure((Status::BadRequest, ()))
+        }        
     }
 }

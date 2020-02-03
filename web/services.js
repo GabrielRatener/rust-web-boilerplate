@@ -1,15 +1,5 @@
 
-import {token} from "./login"
-
 const NS = `/api`;
-
-const auth = () => {
-    if (token() !== null) {
-        return `Bearer ${token()}`;
-    } else {
-        throw new Error("User not logged in!");
-    }
-}
 
 export const querify = (obj) => {
     const queryComponents = [];
@@ -25,7 +15,7 @@ export const querify = (obj) => {
     return queryComponents.join('&');
 }
 
-export const get = (subPath, token = true, data = {}) => {
+export const get = (subPath, data = {}) => {
     const path = `${NS}/${subPath}`;
     const queryString = querify(data);
     const url =
@@ -50,15 +40,11 @@ export const get = (subPath, token = true, data = {}) => {
 
         xhr.open('GET', url, true);
 
-        if (token) {
-            xhr.setRequestHeader("authorization", auth());
-        }
-
         xhr.send();
     });
 }
 
-export const post = (subPath, token = true, data = {}) => {
+export const post = (subPath, data = {}) => {
     const url = `${NS}/${subPath}`;
     
     return new Promise((win, fail) => {
@@ -79,10 +65,6 @@ export const post = (subPath, token = true, data = {}) => {
         xhr.open('POST', url, true);
 
         xhr.setRequestHeader("Content-type", "application/json");
-
-        if (token) {
-            xhr.setRequestHeader("authorization", auth());
-        }
 
         xhr.send(JSON.stringify(data));
     });

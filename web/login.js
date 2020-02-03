@@ -2,11 +2,13 @@
 import {unique} from "./utils"
 import store from "./store"
 import * as services from "./services"
+import router from "./router"
 
-const createSession = (user = null, token = null) => {
+const createSession = (user = null) => {
     return {
-        user,
-        token
+        user
+
+        // TODO: maybe add more stuff here?
     }
 }
 
@@ -20,10 +22,6 @@ export const states = {
     INDETERMINATE: unique(),
     LOGGED_OUT: unique(),
     LOGGED_IN: unique()
-}
-
-export const token = () => {
-    return session.token;
 }
 
 export const waitForLogin = () => {
@@ -44,7 +42,6 @@ export const waitForLogin = () => {
 
 export const unauthenticate = () => {
 
-
     localStorage.removeItem('user');
 
     store.dispatch('endSession');
@@ -52,29 +49,30 @@ export const unauthenticate = () => {
     Object.assign(session, createSession()); // remove session
 }
 
-export const authenticate = (user, token) => {
+export const authenticate = (user, fromSession = false) => {
 
-    localStorage.setItem('user', JSON.stringify(user));
+    if (!fromSession) {
+        localStorage.setItem('user', JSON.stringify(user));
+    }
 
     store.dispatch('startSession', {user});
 
-    Object.assign(session, createSession(user, token));
+    Object.assign(session, createSession(user));
 }
 
-// export const checkSession = ({id, secret}) => {
-//     return services.get('auth/test-token', true, {})
-//         .then(({success}) => {
-//             return success;
-//         });
-// }
+export const verifySession = () => {
+    return services.get('auth/verify-session')
+        .then(({success}) => success)
+        .catch(() => false)
+}
 
 export const logIn = (params) => {
-    return services.post('auth/login', false, params)
-        .then(({err, token, user}) => {
+    return services.post('auth/login', params)
+        .then(({err, user}) => {
             if (err) {
                 return {err, success: false};
             } else {
-                authenticate(user, token);
+                authenticate(user);
 
                 return {err: null, success: true};
             }
@@ -82,54 +80,28 @@ export const logIn = (params) => {
 }
 
 export const logOut = () => {
-    // TODO: Tell server to delete session...
 
-    unauthenticate();
+    services.post('auth/logout')
+        .then(({success}) => {
+            if (success) {
+                unauthenticate();
+            }
+        });
 }
 
 export const signUp = (params) => {
-    return services.post('auth/signup', false, params)
-        .then(({err, token, user}) => {
+    return services.post('auth/signup', params)
+        .then(({err, user}) => {
 
             if (err) {
                 return {err, success: false};
             } else {
-                authenticate(user, token);
+                authenticate(user);
 
                 return {err: null, success: true};
             }
         });
 }
-
-// export const attemptAutoLogin = () => {
-
-//     if (sessionJSON) {
-//         const user = JSON.parse(localStorage.getItem('user'));
-
-//         return checkSession(session)
-//             .then((success) => {
-
-//                 if (success) {
-//                     authenticate(user, session);
-//                 } else {
-//                     unauthenticate();
-//                 }
-
-//                 return success;
-//             }, (err) => {
-
-//                 unauthenticate();
-
-//                 return false;
-//             });
-
-//         // TODO: Implement...
-//     } else {
-//         unauthenticate();
-
-//         return Promise.resolve(false);
-//     }
-// }
 
 export const setLoggedInStatus = (status) => {
     if (status === states.INDETERMINATE) {
@@ -151,14 +123,17 @@ export const setLoggedInStatus = (status) => {
 }
 
 export const resolveLoggedInStatus = () => {
-    // if (localStorage.getItem('user')) {
-    //     attemptAutoLogin()
-    //         .then((success) => {
-    //             setLoggedInStatus(success ? states.LOGGED_IN : states.LOGGED_OUT);
-    //         });
-    // } else {
-    //     setLoggedInStatus(states.LOGGED_OUT);
-    // }
+    
+    services.get('profile/get-profile')
+        .then(({success, user}) => {
 
-    setLoggedInStatus(states.LOGGED_OUT);
+            if (success) {
+                authenticate(user);
+            } else {
+                unauthenticate();
+            }
+        })
+        .catch(() => {
+            unauthenticate();
+        })
 }

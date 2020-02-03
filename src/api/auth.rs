@@ -1,6 +1,7 @@
 use diesel;
 use diesel::prelude::*;
 use rocket::{post, get, State, Request};
+use rocket::http::{Cookies, Cookie, SameSite};
 use rocket_contrib::json;
 use rocket_contrib::json::{Json, JsonValue};
 
@@ -24,6 +25,7 @@ pub fn login(
     user_in: Json<UserLogin>,
     app_config: State<AppConfig>,
     db: DbConn,
+    mut cookies: Cookies,
 ) -> Result<APIResponse, APIResponse> {
     let user_q = users
         .filter(email.eq(&user_in.email))
@@ -38,12 +40,14 @@ pub fn login(
     if !user.verify_password(user_in.password.as_str()) {
         return Err(unauthorized().message("Username or password incorrect."));
     } else {
-        let token = generate_auth_token(user.id);
+        let session_token = generate_auth_token(user.id);
+
+        // create session
+        cookies.add(session_token.as_cookie());
 
         Ok(ok().data(json!({
             "success": true,
-            "user": user,
-            "token": token
+            "user": user
         })))
     }
 }
@@ -55,6 +59,7 @@ pub fn login(
 pub fn signup(
     user: Result<UserSignup, JsonValue>,
     db: DbConn,
+    mut cookies: Cookies
 ) -> Result<APIResponse, APIResponse> {
     let user_data = user.map_err(unprocessable_entity)?;
 
@@ -79,21 +84,44 @@ pub fn signup(
         })))
     } else {
         let user = insert_result?;
-        let token = generate_auth_token(user.id);
+        let session_token = generate_auth_token(user.id);
     
+        cookies.add(session_token.as_cookie());
+
         Ok(ok().data(json!({
             "success": true,
-            "user": user,
-            "token": token
+            "user": user
         })))
     }
 }
 
-#[get("/test-token")]
-pub fn test_token(token: AuthToken) -> APIResponse {            
-    let verified = verify_auth_token(token.to_string_ptr());
+#[get("/verify-session")]
+pub fn verify_session(cookies: Cookies) -> APIResponse {
 
     ok().data(json!({
-        "success": verified
+        "success": match cookies.get("session-token") {
+
+            Some(cookie) => {
+
+                let token_string = String::from(cookie.value());
+
+                println!("token {}", token_string);
+
+                let token = AuthToken::from_string(token_string);
+
+                verify_auth_token(&token)
+            }
+            None => false
+        }
+    }))
+}
+
+#[post("/logout")]
+pub fn logout(mut cookies: Cookies) -> APIResponse {
+
+    cookies.remove(Cookie::named("session-token"));
+
+    ok().data(json!({
+        "success": true
     }))
 }

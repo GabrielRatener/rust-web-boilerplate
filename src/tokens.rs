@@ -7,11 +7,10 @@ use jwt::{Header, Registered, Token};
 use crypto::sha2::Sha256;
 
 use rocket::Outcome;
-use rocket::http::Status;
+use rocket::http::{Status, Cookie, SameSite};
 use rocket::request::{self, Request, FromRequest};
 
 static AUTH_SECRET: &'static str = "blablaksdf";
-
 
 pub struct AuthToken(String);
 
@@ -21,16 +20,17 @@ pub enum AuthError {
     Invalid
 }
 
-pub fn verify_auth_token(token: &String) -> bool {
+pub fn verify_auth_token(token: &AuthToken) -> bool {
+    let token_str = token.to_string_ptr().as_str();
     let verification =
-        Token::<Header, Registered>::parse(token.as_str()).unwrap();
+        Token::<Header, Registered>::parse(token_str).unwrap();
     
     let secret = AUTH_SECRET.as_bytes();
 
     verification.verify(&secret, Sha256::new())
 }
 
-pub fn generate_auth_token(user_id: Uuid) -> String {
+pub fn generate_auth_token(user_id: Uuid) -> AuthToken {
 
     let claims = Registered {
         sub: Some(user_id.to_string()),
@@ -41,14 +41,15 @@ pub fn generate_auth_token(user_id: Uuid) -> String {
     let token = Token::new(header, claims);
     let jwt = token.signed(AUTH_SECRET.as_bytes(), Sha256::new());
 
-    format!("{}", jwt.unwrap())
+    AuthToken::from_string(format!("{}", jwt.unwrap()))
 }
 
-pub fn authenticate_token(token: &String) -> Option<String> {
+pub fn authenticate_token(token: &AuthToken) -> Option<String> {
 
     if verify_auth_token(token) {
+        let token_str = token.to_string_ptr().as_str();
         let verification =
-            Token::<Header, Registered>::parse(token.as_str())
+            Token::<Header, Registered>::parse(token_str)
                 .unwrap();
 
         verification.claims.sub
@@ -62,8 +63,22 @@ fn is_valid_key(key: &str) -> bool {
 }
 
 impl AuthToken {
+    pub fn from_string(string: String) -> Self {
+        AuthToken(string)
+    }
+
     pub fn to_string_ptr(&self) -> &String {
         &self.0
+    }
+
+    pub fn as_cookie(&self) -> Cookie<'static> {
+        let clone = self.to_string();
+
+        Cookie::build("session-token", clone)
+            .http_only(true)
+            .path("/")
+            .same_site(SameSite::Strict)
+            .finish()
     }
 }
 
