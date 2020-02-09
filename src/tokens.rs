@@ -22,12 +22,14 @@ pub enum AuthError {
 
 pub fn verify_auth_token(token: &AuthToken) -> bool {
     let token_str = token.to_string_ptr().as_str();
-    let verification =
-        Token::<Header, Registered>::parse(token_str).unwrap();
-    
-    let secret = AUTH_SECRET.as_bytes();
 
-    verification.verify(&secret, Sha256::new())
+    if let Ok(verification) = Token::<Header, Registered>::parse(token_str) {
+        let secret = AUTH_SECRET.as_bytes();
+
+        verification.verify(&secret, Sha256::new())    
+    } else {
+        false
+    }
 }
 
 pub fn generate_auth_token(user_id: Uuid) -> AuthToken {
@@ -48,11 +50,11 @@ pub fn authenticate_token(token: &AuthToken) -> Option<String> {
 
     if verify_auth_token(token) {
         let token_str = token.to_string_ptr().as_str();
-        let verification =
-            Token::<Header, Registered>::parse(token_str)
-                .unwrap();
 
-        verification.claims.sub
+        match Token::<Header, Registered>::parse(token_str) {
+            Ok(verification) => verification.claims.sub,
+            _ => None
+        }
     } else {
         None
     }
@@ -75,9 +77,9 @@ impl AuthToken {
         let clone = self.to_string();
 
         Cookie::build("session-token", clone)
-            .http_only(true)
             .path("/")
             .same_site(SameSite::Strict)
+            .http_only(true)
             .finish()
     }
 }

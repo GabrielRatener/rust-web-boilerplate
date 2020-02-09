@@ -104,9 +104,6 @@ pub fn verify_session(cookies: Cookies) -> APIResponse {
             Some(cookie) => {
 
                 let token_string = String::from(cookie.value());
-
-                println!("token {}", token_string);
-
                 let token = AuthToken::from_string(token_string);
 
                 verify_auth_token(&token)
